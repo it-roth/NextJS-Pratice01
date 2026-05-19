@@ -1,32 +1,33 @@
-import BlogComponent from "@/components/BlogComponent";
-import { blogType } from "@/lib/blog/blog-type";
+import BlogComponentDummy, { blogTypeDummy } from "@/components/BlogComponentDummy";
 
-export default function BlogPage(){
-    //rendering many passby props
-    const blogs:blogType[]=[
-        {profile: "https://i1-e.pinimg.com/736x/0e/ee/9b/0eee9bfaf9217cacbc7aa387b6f07bb9.jpg",name:"Caty Caty", posisition:"Meow Server"},
-        {profile: "https://i1-e.pinimg.com/736x/0e/ee/9b/0eee9bfaf9217cacbc7aa387b6f07bb9.jpg",name:"Caty Caty1", posisition:"Meow Server"},
-        {profile: "https://i1-e.pinimg.com/736x/0e/ee/9b/0eee9bfaf9217cacbc7aa387b6f07bb9.jpg",name:"Caty Caty2", posisition:"Meow Server"},
-        {profile: "https://i1-e.pinimg.com/736x/0e/ee/9b/0eee9bfaf9217cacbc7aa387b6f07bb9.jpg",name:"Caty Caty3", posisition:"Meow Server"},
-    ]
-    return(
-        // <div>
-        //     <BlogComponent
-        //     profile={"https://i1-e.pinimg.com/736x/0e/ee/9b/0eee9bfaf9217cacbc7aa387b6f07bb9.jpg"}
-        //     name={'Caty Caty'}
-        //     posisition={"Meow Saver"}/>
-        // </div>
-        <div className="container mx-auto pt-20 grid grid-cols-4 gap-4 p-8">
-            {
-                blogs?.map(({profile, name, posisition},_)=>(
-                    <BlogComponent
-                    key={_}
-                    profile={profile}
-                    name={name}
-                    posisition={posisition}
-                    />
-                ))
-            }
-        </div>
-    );
+type PostsResponse = {
+  posts: blogTypeDummy[];
+};
+
+export default async function BlogPage() {
+  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "https://dummyjson.com").trim();
+  const res = await fetch(`${baseUrl}/posts`, {
+    next: { revalidate: 60 },
+  });
+
+  if (!res.ok) {
+    return <div>Failed to load posts</div>;
+  }
+
+  const data = (await res.json()) as PostsResponse;
+
+  return (
+    <div className="mx-auto w-full max-w-6xl px-4 py-15">
+      <div className="mb-6">
+        <h1 className="text-heading font-semibold">Blog</h1>
+        <p className="text-body opacity-70">Click a post to view details</p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {data.posts.map((post) => (
+          <BlogComponentDummy key={post.id} id={post.id} title={post.title} body={post.body} />
+        ))}
+      </div>
+    </div>
+  );
 }
